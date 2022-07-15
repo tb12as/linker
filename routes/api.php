@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LinkController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('link')->group(function() {
+    Route::get('/get/{unique_code}', [LinkController::class, 'getLink']);
+    Route::get('/get-{key}', [LinkController::class, 'getByType']);
+    Route::get('/search/{search}', [LinkController::class, 'search']);
+    Route::post('/create', [LinkController::class, 'store']);
 });
