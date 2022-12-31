@@ -19,7 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('link')->group(function() {
+Route::prefix('link')->group(function () {
     Route::get('/get/{unique_code}', [LinkController::class, 'getLink']);
     Route::get('/get-{key}', [LinkController::class, 'getByType']);
     Route::get('/search/{search}', [LinkController::class, 'search']);
