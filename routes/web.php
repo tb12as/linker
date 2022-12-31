@@ -25,7 +25,7 @@ Route::get('r/{code}', function ($uniqueCode) {
     }
 
     abort(404);
-});
+})->name('red');
 
 Route::get('/', function () {
     return view('welcome');
