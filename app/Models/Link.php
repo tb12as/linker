@@ -12,5 +12,8 @@ class Link extends Model
     protected $casts = [
         'expire_at' => 'datetime',
         'views_count' => 'integer',
+        'is_private' => 'boolean'
     ];
+
+    // TODO : add global scope to check expired_at date
 }

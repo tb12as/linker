@@ -40,5 +40,11 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_pro' => 'boolean',
     ];
+
+    public function username(): string
+    {
+        return 'username';
+    }
 }
