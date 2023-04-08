@@ -22,6 +22,8 @@ class AuthController extends ApiController
                 'token' => $token->plainTextToken,
             ]);
         }
+
+        return $this->fail('Incorrect username or password', 401);
     }
 
     public function logout(Request $request)
