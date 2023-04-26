@@ -185,6 +185,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Onecentlin\Adminer\ServiceProvider::class,
 
         /*
          * Application Service Providers...
