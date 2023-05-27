@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::view('{any}', 'app')->where('any', '.*');
+
 Route::get('r/{code}', function ($uniqueCode) {
     $link = Link::where('unique_code', $uniqueCode)->first();
     if ($link != null) {

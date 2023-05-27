@@ -10,6 +10,7 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
+        "laravel/ui": "^4.2",
         "onecentlin/laravel-adminer": "^6.1"
     },
     "require-dev": {
