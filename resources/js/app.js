@@ -4,10 +4,14 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-import './bootstrap'
-import '../css/app.css'
-import router from './router'
-import { createApp } from 'vue'
+import "./bootstrap";
+import "../css/app.css";
+import "../css/custom.scss";
+import router from "./router";
+import { createApp } from "vue";
+
+import axios from "./axios.js";
+import store from "./store/index";
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -15,12 +19,17 @@ import { createApp } from 'vue'
  * to use in your application's views. An example is included for you.
  */
 
-const app = createApp({})
+import App from "./components/App.vue";
+import Notifications from "@kyvg/vue3-notification";
 
-import App from './components/App.vue'
-app.component('App', App)
+const app = createApp({});
+// app.provide("$http", axios
+app.config.globalProperties.$http = axios;
 
-app.use(router)
+app.component("App", App);
+app.use(Notifications);
+app.use(router);
+app.use(store);
 
 /**
  * The following block of code may be used to automatically register your
@@ -40,4 +49,4 @@ app.use(router)
  * scaffolding. Otherwise, you will need to add an element yourself.
  */
 
-app.mount('#app')
+app.mount("#app");

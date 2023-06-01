@@ -1,3 +1,6 @@
 1. read soon :
-     https://www.wahyunanangwidodo.com/2022/08/Cara-install-dan-menggunakan-vue-3-di-laravel-9.html
+   https://www.wahyunanangwidodo.com/2022/08/Cara-install-dan-menggunakan-vue-3-di-laravel-9.html [done]
 
+2. login [done]
+3. user link, create, show, and more
+4. implement middleware in router.js

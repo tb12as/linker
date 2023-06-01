@@ -1,11 +1,12 @@
 <template>
-    <router-view></router-view>
+  <notifications />
+  <router-view></router-view>
 </template>
 
 <script>
 export default {
-    mounted() {
-        console.log('Component mounted.')
-    }
-}
+  created() {
+    this.$store.dispatch("getUser");
+  },
+};
 </script>

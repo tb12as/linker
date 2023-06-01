@@ -33,4 +33,11 @@ class AuthController extends ApiController
 
         return $this->success();
     }
+
+    public function getUser(Request $req)
+    {
+        $user = $req->user();
+
+        return $this->json($user);
+    }
 }

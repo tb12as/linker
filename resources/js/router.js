@@ -9,8 +9,8 @@ import Login from './views/Login.vue'
 // Each route should map to a component.
 // We'll talk about nested routes later.
 const routes = [
-    { path: '/', component: Home },
-    { path: '/login', component: Login, name: 'login' }
+    // { path: '/', component: Home },
+    { path: '/', component: Login, name: 'login' }
 ]
 
 // 3. Create the router instance and pass the `routes` option

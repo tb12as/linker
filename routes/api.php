@@ -16,9 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('guest:sanctum');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/get-user', [AuthController::class, 'getUser']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::prefix('link')->group(function () {
