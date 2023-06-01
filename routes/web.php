@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('{any}', 'app')->where('any', '.*');
 
 Route::get('r/{code}', function ($uniqueCode) {
     $link = Link::where('unique_code', $uniqueCode)->first();
@@ -29,6 +28,8 @@ Route::get('r/{code}', function ($uniqueCode) {
 
     abort(404);
 })->name('red');
+
+Route::view('{any}', 'app')->where('any', '.*');
 
 Route::get('/', function () {
     return view('welcome');
