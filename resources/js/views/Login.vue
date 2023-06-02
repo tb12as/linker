@@ -74,6 +74,16 @@ export default {
     };
   },
 
+  created() {
+    this.$store.dispatch("getUser").then(() => {
+      if (!this.$store.state.user) {
+        this.$router.push({ name: "login" });
+      } else {
+        this.$router.push({ name: "user.link" });
+      }
+    });
+  },
+
   methods: {
     async sendLogin() {
       await this.$http
@@ -81,6 +91,10 @@ export default {
         .then((res) => {
           const token = res.data.data.token;
           localStorage.setItem("api-token", token);
+
+          this.$store.commit("setUser", res.data.data.user);
+
+          this.$router.push({ name: "user.link" });
         })
         .catch((err) => {
           // console.log(err);

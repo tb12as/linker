@@ -5,7 +5,7 @@
 
 <script>
 export default {
-  created() {
+  beforeCreate() {
     this.$store.dispatch("getUser");
   },
 };

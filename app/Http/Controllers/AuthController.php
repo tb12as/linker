@@ -20,6 +20,7 @@ class AuthController extends ApiController
 
             return $this->success(data: [
                 'token' => $token->plainTextToken,
+                'user' => $user,
             ]);
         }
 
