@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Link;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 Route::get('r/{code}', function ($uniqueCode) {
     $link = Link::where('unique_code', $uniqueCode)->first();
     if ($link != null) {
@@ -29,4 +31,13 @@ Route::get('r/{code}', function ($uniqueCode) {
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/64', function (Request $request) {
+    $request->validate(['content' => 'required', 'action' => 'required|in:d,e']);
+    if ($request->action === 'e') {
+        return base64_encode($request->content);
+    }
+
+    return base64_decode($request->content);
 });
