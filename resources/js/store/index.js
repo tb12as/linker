@@ -5,10 +5,15 @@ const store = createStore({
     state() {
         return {
             user: null,
+            link_search: null,
             links: [],
         };
     },
     mutations: {
+        setSearch(state, n) {
+            state.link_search = n;
+        },
+
         setUser(state, user) {
             state.user = user;
         },
@@ -37,7 +42,12 @@ const store = createStore({
         },
 
         async getLinks({ commit, state }) {
-            await http.get("/link/mine").then((res) => {
+            const params = {};
+            if (state.link_search) {
+                params["search"] = state.link_search;
+            }
+
+            await http.get("/link/mine", { params }).then((res) => {
                 commit("setLinks", res.data.data);
             });
         },

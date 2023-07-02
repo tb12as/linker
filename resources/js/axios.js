@@ -1,6 +1,8 @@
 // axios
 import axios from "axios";
 import { notify } from "@kyvg/vue3-notification";
+import router from "./router";
+import store from "./store";
 
 const baseURL = "/api";
 
@@ -36,6 +38,8 @@ a.interceptors.response.use(
 
         if (error.response.status == 401) {
             localStorage.removeItem("api-token");
+            store.commit("setUser", null);
+            router.push({ name: "login" });
         }
 
         return Promise.reject(error);

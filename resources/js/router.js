@@ -21,6 +21,22 @@ const routes = [
             authRequired: true,
         },
     },
+    {
+        path: "/links/create",
+        component: () => import("./views/Form.vue"),
+        name: "link.create",
+        meta: {
+            authRequired: true,
+        },
+    },
+    {
+        path: "/links/:id/edit",
+        component: () => import("./views/Form.vue"),
+        name: "link.edit",
+        meta: {
+            authRequired: true,
+        },
+    },
 ];
 
 // 3. Create the router instance and pass the `routes` option
@@ -34,7 +50,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.meta.authRequired) {
-        if (!store.state.user) {
+        if (!store.state.user && !localStorage.getItem('api-token')) {
             router.push({ name: "login", query: { to: to.path } });
         }
     } else {

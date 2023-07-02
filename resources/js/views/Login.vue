@@ -89,12 +89,10 @@ export default {
       await this.$http
         .post("/login", this.form)
         .then((res) => {
-          const token = res.data.data.token;
-          localStorage.setItem("api-token", token);
-
+          localStorage.setItem("api-token", res.data.data.token);
           this.$store.commit("setUser", res.data.data.user);
 
-          this.$router.push({ name: "user.link" });
+          location.reload();
         })
         .catch((err) => {
           // console.log(err);
