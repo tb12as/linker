@@ -20,6 +20,7 @@ class AuthController extends ApiController
 
             return $this->success(data: [
                 'token' => $token->plainTextToken,
+                'user' => $user,
             ]);
         }
 
@@ -32,5 +33,12 @@ class AuthController extends ApiController
         $user->currentAccessToken()->delete();
 
         return $this->success();
+    }
+
+    public function getUser(Request $req)
+    {
+        $user = $req->user();
+
+        return $this->json($user);
     }
 }

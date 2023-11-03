@@ -16,13 +16,13 @@ class LinkController extends ApiController
             'latest' => Link::query()->orderBy('id', 'desc')->take(5)->where('is_private', false),
             'random' => Link::query()->inRandomOrder()->take(5)->where('is_private', false),
             'popular' => Link::query()
-                    ->where('is_private', false)
-                    ->orderBy('views_count', 'desc')
-                    ->where('views_count', '>', 0)
-                    ->take(5),
+                ->where('is_private', false)
+                ->orderBy('views_count', 'desc')
+                ->where('views_count', '>', 0)
+                ->take(5),
         ];
 
-        if (! isset($links[$type])) {
+        if (!isset($links[$type])) {
             $av = implode(', ', array_keys($links));
 
             return $this->fail('Type not found, available : ' . $av, code: 404);
@@ -35,7 +35,7 @@ class LinkController extends ApiController
     {
         $link = Link::where('unique_code', $uniqueCode)->first();
 
-        if (! $link) {
+        if (!$link) {
             return $this->notFound('Link not found');
         }
 
@@ -55,17 +55,30 @@ class LinkController extends ApiController
         $request->validate([
             'title' => 'required',
             'link' => 'required|active_url|url',
-            'custom' => $userIsPro ? 'nullable|unique:links,unique_code|min:3' : '',
+
         ]);
 
         $link = new Link();
+        if ($request->filled('code')) {
+            $link = Link::where('unique_code', $request->code)->firstOrFail();
+            $request->validate([
+                'custom' => 'nullable|min:3|alpha_num|unique:links,unique_code,' . $link->id
+            ]);
+        }
+
+        if ($userIsPro && !$request->filled('code')) {
+            $request->validate([
+                'custom' => 'nullable|min:3|alpha_num|unique:links,unique_code'
+            ]);
+        }
+
         if ($user) {
             $link->user_id = $user->id;
         }
 
         if ($request->filled('private')) {
             if ($userIsPro) {
-                $link->is_private = true;
+                $link->is_private = $request->boolean('private');
             } else {
                 return $this->fail($user ? 'Your account is not pro' : 'Please login :(');
             }
@@ -95,6 +108,12 @@ class LinkController extends ApiController
     {
         $user = $request->user();
         $links = Link::where('user_id', $user->id)
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->where(function ($qq) use ($request) {
+                    $qq->where('title', 'like', "%$request->search%")
+                        ->orWhere('unique_code', 'like', "%$request->search%");
+                });
+            })
             ->orderBy('id', 'desc')
             ->get();
 
@@ -103,7 +122,7 @@ class LinkController extends ApiController
 
     public function search($q)
     {
-        if (! is_null($q) && $q != '' && strlen($q) >= 3) {
+        if (!is_null($q) && $q != '' && strlen($q) >= 3) {
             $d = Link::query()
                 ->where('title', 'like', "%$q%")
                 ->where('is_private', false)

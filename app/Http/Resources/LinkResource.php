@@ -22,8 +22,8 @@ class LinkResource extends JsonResource
             'code' => $this->unique_code,
             'is_private' => $this->is_private,
             'view_count' => number_format($this->views_count),
-            'created_at' => $this->created_at->format('F d, Y H:i'),
-            'expire_at' => $this->expire_at->format('F d, Y H:i'),
+            'created_at' => $this->created_at->format('F d Y, H:i'),
+            'expire_at' => $this->expire_at->format('F d Y, H:i'),
         ];
     }
 }
