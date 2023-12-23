@@ -105,7 +105,7 @@ export default {
       });
     },
 
-    sendNewLink() {
+    async sendNewLink() {
       console.log("sending...");
       if (this.loading) {
         return;
@@ -116,7 +116,7 @@ export default {
         delete this.form.private;
       }
 
-      this.$http
+      await this.$http
         .post("/link/create", this.form)
         .then((res) => {
           this.$router.push({ name: "user.link" });

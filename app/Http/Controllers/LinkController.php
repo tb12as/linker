@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 // use App\Http\Controllers\ApiController;
 use App\Http\Resources\LinkResource;
 use App\Models\Link;
+use App\Models\Setting;
+use App\Models\UserSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -107,15 +109,31 @@ class LinkController extends ApiController
     public function myLinks(Request $request)
     {
         $user = $request->user();
+        $settings = UserSetting::select('user_settings.*', 'settings.key as key')
+            ->where('user_id', $user->id)
+            ->join('settings', 'user_settings.setting_id', '=', 'settings.id')
+            ->get();
+
+        $hidePrivate = $settings->where('key', 'hide_private_link')->first();
+        $hide = $hidePrivate && boolval($hidePrivate->value) === true;
+
         $links = Link::where('user_id', $user->id)
+            ->when($hide, function ($q) {
+                $q->where('is_private', false);
+            })
             ->when($request->filled('search'), function ($q) use ($request) {
                 $q->where(function ($qq) use ($request) {
                     $qq->where('title', 'like', "%$request->search%")
                         ->orWhere('unique_code', 'like', "%$request->search%");
                 });
             })
-            ->orderBy('id', 'desc')
-            ->get();
+            ->orderBy('id', 'desc');
+
+        if ($request->filled('page')) {
+            $links = $links->simplePaginate(15);
+        } else {
+            $links = $links->get();
+        }
 
         return LinkResource::collection($links);
     }
@@ -137,5 +155,12 @@ class LinkController extends ApiController
         }
 
         return $this->fail();
+    }
+
+    public function destroy(Link $link)
+    {
+        $link->delete();
+
+        return $this->success();
     }
 }

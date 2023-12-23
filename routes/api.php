@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LinkController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('link')->group(function () {
         Route::get('/mine', [LinkController::class, 'myLinks']);
+        Route::delete('/{link:unique_code}', [LinkController::class, 'destroy']);
+    });
+
+    Route::prefix('setting')->group(function () {
+        Route::get('/', [SettingController::class, 'userSetting']);
+        Route::post('/', [SettingController::class, 'setSetting']);
     });
 });
 

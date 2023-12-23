@@ -37,6 +37,14 @@ const routes = [
             authRequired: true,
         },
     },
+    {
+        path: "/settings",
+        component: () => import("./views/Setting.vue"),
+        name: "setting",
+        meta: {
+            authRequired: true,
+        },
+    },
 ];
 
 // 3. Create the router instance and pass the `routes` option
@@ -50,7 +58,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.meta.authRequired) {
-        if (!store.state.user && !localStorage.getItem('api-token')) {
+        if (!store.state.user && !localStorage.getItem("api-token")) {
             router.push({ name: "login", query: { to: to.path } });
         }
     } else {

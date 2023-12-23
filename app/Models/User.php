@@ -47,4 +47,9 @@ class User extends Authenticatable
     {
         return 'username';
     }
+
+    public function settings()
+    {
+        return $this->hasMany(UserSetting::class);
+    }
 }

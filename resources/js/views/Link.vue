@@ -40,13 +40,21 @@
             :to="{name: 'link.create'}"
             class="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-primary-300 rounded-lg text-sm px-5 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-primary-800 mt-1 mx-2"
           >Create</router-link>
+
+          <router-link
+            :to="{name: 'setting'}"
+            class="text-white ml-auto bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-primary-300 rounded-lg text-sm px-5 py-2 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-primary-800 mt-1 mx-2"
+          >Setting</router-link>
         </div>
       </div>
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+
+      <!-- Table -->
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 scrollbar">
         <thead
           class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
         >
           <tr>
+            <th scope="col" class="px-6 py-3">No</th>
             <th scope="col" class="px-6 py-3">Title</th>
             <th scope="col" class="px-6 py-3">Redirect Link</th>
             <!-- <th scope="col" class="px-6 py-3">Original Link</th> -->
@@ -68,6 +76,7 @@
             :key="i"
             class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
+            <td class="px-6 py-4">{{ i+1 }}</td>
             <th
               scope="row"
               class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white flex"
@@ -99,29 +108,85 @@
             <td class="px-6 py-4">
               <router-link
                 :to="{ name: 'link.edit', params: { id: v.code }}"
-                class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                class="m-1 font-medium text-blue-600 dark:text-blue-500 hover:underline"
               >Edit</router-link>
+
+              <button
+                class="m-1 font-medium text-red-600 dark:text-red-500 hover:underline"
+                @click.prevent="deleteLink(v.code)"
+              >Delete</button>
+            </td>
+          </tr>
+
+          <tr
+            v-if="next_page"
+            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+          >
+            <td class="px-6 py-4 text-center" colspan="5">
+              <button
+                @click.prevent="loadMore()"
+                class="m-1 font-medium text-white-600 dark:text-white-500 hover:underline"
+              >Load More</button>
             </td>
           </tr>
         </tbody>
       </table>
+      <!-- End of table -->
     </div>
+
+    <Modal
+      title="Delete this link?"
+      :acceptText="'Delete'"
+      :accept-class="'bg-red-700 text-white rounded hover:bg-red-600'"
+      ref="modal"
+      @accept="acceptDelete()"
+    >
+      <table v-if="delete_temp" border="1" class="m-0">
+        <tr>
+          <td class="py-2 pr-1 text-sm text-gray-300 font-semibold" valign="top">Title</td>
+          <td class="py-2 pr-1 text-sm text-gray-400" valign="top">:</td>
+          <td class="py-2 pr-1 text-sm text-gray-400" valign="top">{{ delete_temp.title }}</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-1 text-sm text-gray-300 font-semibold" valign="top">Original Link</td>
+          <td class="py-2 pr-1 text-sm text-gray-400" valign="top">:</td>
+          <td class="py-2 pr-1 text-sm text-gray-400" valign="top">{{ delete_temp.link }}</td>
+        </tr>
+        <tr>
+          <td class="py-2 pr-1 text-sm text-gray-300 font-semibold" valign="top">Redirect Link</td>
+          <td class="py-2 pr-1 text-sm text-gray-400" valign="top">:</td>
+          <td class="py-2 pr-1 text-sm text-gray-400" valign="top">
+            <a
+              :href="delete_temp.short_link"
+              target="blank"
+              class="underline"
+            >{{ delete_temp.short_link }}</a>
+          </td>
+        </tr>
+      </table>
+    </Modal>
   </section>
 </template>
 
 <script>
+import Modal from "../components/Modal.vue";
 import { mapState } from "vuex";
 
 export default {
+  components: {
+    Modal,
+  },
+
   data() {
     return {
       search: undefined,
       waiting: undefined,
+      delete_temp: undefined,
     };
   },
 
   computed: {
-    ...mapState(["links", "link_search"]),
+    ...mapState(["links", "link_search", "next_page", "page"]),
   },
 
   mounted() {
@@ -136,12 +201,37 @@ export default {
 
       this.waiting = setTimeout(() => {
         this.$store.commit("setSearch", this.search);
+        this.$store.commit("setPage", 1);
+        this.$store.commit("setLinks", []);
         this.$store.dispatch("getLinks");
       }, 700);
+    },
+
+    deleteLink(id) {
+      const link = this.links.find((v) => v.code === id);
+      if (link) {
+        this.delete_temp = link;
+
+        this.$refs.modal.openModal();
+      }
+    },
+    acceptDelete() {
+      if (this.delete_temp) {
+        this.$http.delete("/link/" + this.delete_temp.code).then(() => {
+          this.$store.dispatch("removeLink", this.delete_temp.code);
+          this.$refs.modal.cancel();
+        });
+      }
+    },
+
+    loadMore() {
+      this.$store.commit("setPage", this.page + 1);
+      this.$store.dispatch("getLinks", true);
     },
   },
 
   beforeCreate() {
+    this.$store.commit("setPage", 1);
     this.$store.dispatch("getLinks");
   },
 };
