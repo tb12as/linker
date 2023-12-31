@@ -23,7 +23,6 @@ jobs:
 
       - name: Install dependencies and build Vue.js
         run: |
-          cd linkers
           npm install
           npm run build
 
