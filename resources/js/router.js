@@ -6,6 +6,7 @@ import store from "./store/index";
 import Home from "./components/ExampleComponent.vue";
 import Login from "./views/Login.vue";
 import Link from "./views/Link.vue";
+import NotFound from "./views/404.vue";
 
 // 2. Define some routes
 // Each route should map to a component.
@@ -44,6 +45,11 @@ const routes = [
         meta: {
             authRequired: true,
         },
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        component: NotFound,
+        name: "not-found",
     },
 ];
 
