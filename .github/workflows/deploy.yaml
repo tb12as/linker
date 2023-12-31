@@ -36,6 +36,7 @@ jobs:
             cd ${{ secrets.PROJECT_PATH }}
             git pull
             php artisan down
+            php artisan migrate
             php artisan optimize
 
       - name: Upload build directory to Production Server
