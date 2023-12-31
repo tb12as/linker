@@ -1,0 +1,59 @@
+name: Deploy to Production
+
+on:
+  push:
+    paths:
+      - "**/*.vue"
+      - "**/*.js"
+      - "**/*.blade.php"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy.yaml"
+
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies and build Vue.js
+        run: |
+          cd linkers
+          npm install
+          npm run build
+
+      - name: Down the server, optimize cache
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOSTNAME }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.PROJECT_PATH }}
+            git pull
+            php artisan down
+            php artisan optimize
+
+      - name: Upload build directory to Production Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOSTNAME }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "linkers/public/build"
+          target: "${{ secrets.PROJECT_PATH }}/public/build"
+
+      - name: Wake up!
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOSTNAME }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.PROJECT_PATH }}
+            php artisan up
