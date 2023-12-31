@@ -26,7 +26,7 @@ jobs:
           npm install
           npm run build
 
-      - name: Down the server, optimize cache
+      - name: Down the server (enter maintenance mode), migrate, optimize cache
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOSTNAME }}
@@ -48,7 +48,7 @@ jobs:
           source: "./public/build"
           target: "${{ secrets.PROJECT_PATH }}"
 
-      - name: Wake up!
+      - name: Leave maintenance mode
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOSTNAME }}
