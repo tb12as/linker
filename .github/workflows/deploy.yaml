@@ -44,7 +44,7 @@ jobs:
           host: ${{ secrets.SSH_HOSTNAME }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "linkers/public/build"
+          source: "./public/build"
           target: "${{ secrets.PROJECT_PATH }}/public/build"
 
       - name: Wake up!
