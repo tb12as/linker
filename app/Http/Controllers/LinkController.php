@@ -70,7 +70,7 @@ class LinkController extends ApiController
 
         if ($userIsPro && !$request->filled('code')) {
             $request->validate([
-                'custom' => 'nullable|min:3|alpha_num|unique:links,unique_code'
+                'custom' => 'nullable|min:3|unique:links,unique_code'
             ]);
         }
 
