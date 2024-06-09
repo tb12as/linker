@@ -14,10 +14,14 @@ class LinkResource extends JsonResource
      */
     public function toArray($request)
     {
+        $redirect = route('red', ['code' => $this->unique_code]);
+        if (str_contains($redirect, 'dash.')) {
+            $redirect = str_replace('dash.', '', $redirect);
+        }
         return [
             // 'id' => $this->id,
             'link' => $this->original_link,
-            'short_link' => route('red', ['code' => $this->unique_code]),
+            'short_link' => $redirect,
             'title' => $this->title,
             'code' => $this->unique_code,
             'is_private' => $this->is_private,
