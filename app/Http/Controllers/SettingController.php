@@ -23,6 +23,7 @@ class SettingController extends Controller
         return Setting::with('user_setting')->get()
             ->map(function ($q) {
                 $q->user_value = data_get($q, 'user_setting.value');
+
                 return $q;
             });
     }
@@ -44,7 +45,10 @@ class SettingController extends Controller
         $setting = Setting::find($request->setting_id);
         abort_if(!$setting, 404, 'Setting not found');
 
-        $us = UserSetting::where('setting_id', $setting->id)->first();
+        $us = UserSetting::where('setting_id', $setting->id)
+            ->where('user_id', $user->id)
+            ->first();
+
         $us = $us ?? new UserSetting();
         $us->setting_id = $setting->id;
         $us->user_id = $user->id;
