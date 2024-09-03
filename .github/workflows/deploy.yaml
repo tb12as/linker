@@ -35,6 +35,7 @@ jobs:
           script: |
             cd ${{ secrets.PROJECT_PATH }}
             git pull
+            composer install
             php artisan down
             php artisan migrate
             php artisan optimize
