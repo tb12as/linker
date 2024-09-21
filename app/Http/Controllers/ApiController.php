@@ -20,10 +20,11 @@ class ApiController extends Controller
         ], 404);
     }
 
-    public function success($message = 'Success!', $data = null)
+    public function success($message = 'Success!', $data = null, $showMessage = false)
     {
         return $this->json([
             'message' => $message,
+            'show_message' => $showMessage,
             'data' => $data,
         ]);
     }
