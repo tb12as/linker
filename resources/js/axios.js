@@ -23,7 +23,7 @@ a.interceptors.response.use(
         if (res.data.show_message) {
             notify({
                 title: "Success",
-                text: data.message,
+                text: res.data.message,
             });
         }
         // return res;

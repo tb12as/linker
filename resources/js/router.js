@@ -7,13 +7,15 @@ import Home from "./components/ExampleComponent.vue";
 import Login from "./views/Login.vue";
 import Link from "./views/Link.vue";
 import NotFound from "./views/404.vue";
+import Public from "./views/Public.vue";
 
 // 2. Define some routes
 // Each route should map to a component.
 // We'll talk about nested routes later.
 const routes = [
     // { path: '/', component: Home },
-    { path: "/", component: Login, name: "login" },
+    { path: "/", component: Public, name: "public" },
+    { path: "/login", component: Login, name: "login" },
     {
         path: "/links",
         component: Link,
