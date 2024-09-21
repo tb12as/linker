@@ -27,7 +27,7 @@
               readonly
               :disabled="form.short === ''"
               placeholder="lnkr.pw/r/[code]"
-              @click="copyToClipboard(form.short)"
+              @click="form.short === '' ? () => {} : copyToClipboard(form.short)"
             />
 
             <button
@@ -36,6 +36,11 @@
               :disabled="loading || !form.link || form.link == ''"
             >Create Link</button>
           </form>
+
+          <p class="text-gray-100">
+            Already have an account? Log in
+            <router-link to="/login" class="underline">Here</router-link>
+          </p>
         </div>
       </div>
     </div>
