@@ -61,7 +61,7 @@ Free link sharer api
 </table>
 
 ## Todo
-- [ ] Public short link create
+- [x] <strike>Public short link create</strike>
 - [ ] Register
 - [ ] Logout (revoke token)
 - [ ] Add more API documentation
