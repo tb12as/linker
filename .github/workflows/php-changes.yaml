@@ -1,0 +1,34 @@
+name: Apply php changes
+
+on:
+  push:
+    paths:
+      - "**/*.php"
+      - "composer.json"
+      - ".github/workflows/php-changes.yaml"
+
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Server down, pull changes, migrate, optimize cache, server up.
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOSTNAME }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.PROJECT_PATH }}
+            git pull
+            php artisan down
+            composer install --no-dev
+            php artisan migrate
+            php artisan optimize
+            php artisan up
