@@ -15,7 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::get('r/{code}', function ($uniqueCode) {
-    $link = Link::where('unique_code', $uniqueCode)->first();
+    $alphaId = alphaID($uniqueCode, true);
+
+    $link = Link::where('alpha_id_number', $alphaId)->first();
+
     if ($link != null) {
         $link->views_count += 1;
         $link->save();

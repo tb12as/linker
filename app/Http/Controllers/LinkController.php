@@ -35,7 +35,9 @@ class LinkController extends ApiController
 
     public function getLink(string $uniqueCode)
     {
-        $link = Link::where('unique_code', $uniqueCode)->first();
+        $alphaId = alphaID($uniqueCode, true);
+
+        $link = Link::where('alpha_id_number', $alphaId)->first();
 
         if (!$link) {
             return $this->notFound('Link not found');
@@ -94,13 +96,14 @@ class LinkController extends ApiController
         if ($userIsPro && $request->filled('custom')) {
             $uniqueCode = $request->custom;
         } else {
-            $uniqueCode = alphaID(rand(1e9, 1e14));
+            $uniqueCode = alphaID(rand(1e9, 1e10));
             if (Link::where('unique_code', $uniqueCode)->exists()) {
                 goto generateId;
             }
         }
 
         $link->unique_code = $uniqueCode;
+        $link->alpha_id_number = alphaID($uniqueCode, true);
         $link->save();
 
         return $this->success('Link created!', new LinkResource($link), true);
