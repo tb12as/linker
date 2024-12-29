@@ -66,7 +66,7 @@ class LinkController extends ApiController
         if ($request->filled('code')) {
             $link = Link::where('unique_code', $request->code)->firstOrFail();
             $request->validate([
-                'custom' => 'nullable|min:3|alpha_num|unique:links,unique_code,' . $link->id,
+                'custom' => 'nullable|min:3|unique:links,unique_code,' . $link->id,
             ]);
         }
 
