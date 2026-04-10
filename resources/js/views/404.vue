@@ -1,25 +1,36 @@
 <template>
-  <div class="text-center h-screen flex justify-center items-center">
-    <div>
-      <h1 class="text-white text-6xl font-bold mb-4">
-        404 | Not Found
-      </h1>
-      <p class="text-gray-300 text-2xl mb-8">
-        This page does not exist, just like your crush.
+  <PageSection
+    title="Page not found"
+    section-class="py-6 md:py-12"
+  >
+    <SurfaceCard class="mx-auto max-w-md p-5 text-center">
+      <p class="text-5xl font-semibold text-app-text">
+        404
+      </p>
+      <p class="mt-3 text-sm text-app-muted">
+        The page could not be found.
       </p>
 
       <router-link
         :to="{ path: '/' }"
-        class="bg-blue-700 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded"
+        class="mt-5 inline-flex rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
       >
         Go Home
       </router-link>
-    </div>
-  </div>
+    </SurfaceCard>
+  </PageSection>
 </template>
 
 <script>
+import PageSection from '../components/PageSection.vue'
+import SurfaceCard from '../components/SurfaceCard.vue'
+
 export default {
-  name: 'NotFound'
+  name: 'NotFound',
+
+  components: {
+    PageSection,
+    SurfaceCard
+  }
 }
 </script>

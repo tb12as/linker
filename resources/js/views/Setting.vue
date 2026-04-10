@@ -1,76 +1,68 @@
 <template>
-  <div class="md:container md:mx-auto mx-4">
-    <div class="my-5 lg:w-3/4">
-      <h1
-        class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-gray-300 my-4"
+  <PageSection
+    title="Settings"
+    section-class="py-3 md:py-6"
+  >
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <SurfaceCard
+        v-for="setting in settings"
+        :key="setting.id"
+        class="p-4"
       >
-        Setting
-      </h1>
+        <div class="flex h-full flex-col">
+          <div>
+            <p class="text-[11px] font-medium uppercase tracking-[0.2em] text-app-muted">
+              {{ setting.type }}
+            </p>
+            <h2 class="mt-1 text-base font-semibold text-app-text">
+              {{ setting.t_name || setting.name }}
+            </h2>
+            <p class="mt-2 text-sm text-app-muted">
+              Current: {{ setting.user_setting ? setting.user_setting.value : '-' }}
+            </p>
+          </div>
 
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 scrollbar">
-        <thead
-          class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
-        >
-          <tr>
-            <th
-              scope="col"
-              class="px-6 py-3"
+          <div class="mt-4 flex flex-1 flex-col gap-3">
+            <input
+              v-model="setting.user_value"
+              type="text"
+              :placeholder="setting.type[0].toUpperCase() + setting.type.slice(1) + ' value'"
+              class="app-input"
             >
-              Name
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3"
+            <button
+              type="button"
+              class="mt-auto inline-flex items-center justify-center rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+              @click="saveSetting(setting)"
             >
-              Value
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3"
-            >
-              Value
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(v, i) in settings"
-            :key="i"
-            class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-          >
-            <td class="px-6 py-4">
-              {{ v.t_name||v.name }}
-            </td>
-            <td class="px-6 py-4">
-              {{ v.user_setting? v.user_setting.value : '-' }}
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-1">
-                <input
-                  v-model="v.user_value"
-                  required
-                  type="text"
-                  :placeholder="v.type[0].toUpperCase() + v.type.slice(1) + ' value'"
-                  class="mr-1 bg-gray-50 outline-none border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                >
-                <button
-                  class="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-primary-300 rounded-lg text-sm px-5 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-primary-800"
-                  @click="saveSetting(v)"
-                >
-                  Save
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              Save
+            </button>
+          </div>
+        </div>
+      </SurfaceCard>
     </div>
-  </div>
+
+    <EmptyState
+      v-if="settings.length === 0"
+      title="No settings"
+      description=""
+      class="mt-6"
+    />
+  </PageSection>
 </template>
 
 <script>
+import EmptyState from '../components/EmptyState.vue'
+import PageSection from '../components/PageSection.vue'
+import SurfaceCard from '../components/SurfaceCard.vue'
+
 export default {
   name: 'SettingPage',
+
+  components: {
+    EmptyState,
+    PageSection,
+    SurfaceCard
+  },
 
   data () {
     return {
@@ -94,7 +86,7 @@ export default {
         setting_id: setting.id,
         value: setting.user_value
       }
-      this.$http.post('/setting', data).then((res) => {
+      this.$http.post('/setting', data).then(() => {
         this.loadSettings()
       })
     }
