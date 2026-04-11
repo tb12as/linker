@@ -6,16 +6,20 @@ import store from './store'
 
 const baseURL = '/api'
 
-let headers = {}
-const token = localStorage.getItem('api-token') || null
-if (token) {
-  headers = {
-    Authorization: `Bearer ${localStorage.getItem('api-token')}`
-  }
-}
 const a = axios.create({
-  baseURL,
-  headers
+  baseURL
+})
+
+a.interceptors.request.use((config) => {
+  const token = localStorage.getItem('api-token')
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  } else if (config.headers.Authorization) {
+    delete config.headers.Authorization
+  }
+
+  return config
 })
 
 a.interceptors.response.use(

@@ -1,74 +1,69 @@
 <template>
-  <section class="bg-gray-50 dark:bg-gray-900">
-    <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-      <div
-        class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-xl xl:p-0 dark:bg-gray-800 dark:border-gray-700"
+  <PageSection
+    title="Create short link"
+    section-class="py-3 md:py-6"
+  >
+    <SurfaceCard class="max-w-2xl p-4 sm:p-5">
+      <form
+        class="space-y-4"
+        @submit.prevent="sendForm"
       >
-        <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-          <h1
-            class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white"
+        <CustomInput
+          id="link"
+          v-model="form.link"
+          label="URL"
+          type="url"
+          name="link"
+          :required="true"
+          autocomplete="url"
+          placeholder="https://a-very-long-link.example"
+        />
+
+        <CustomInput
+          id="short"
+          v-model="form.short"
+          label="Short link"
+          type="text"
+          readonly
+          :disabled="form.short === ''"
+          placeholder="lnkr.pw/r/[code]"
+          @click="form.short === '' ? () => {} : copyToClipboard(form.short)"
+        />
+
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            :disabled="loading || !form.link"
           >
-            Create a short link
-          </h1>
+            {{ loading ? 'Creating...' : 'Create' }}
+          </button>
 
-          <form
-            class="space-y-4 md:space-y-6"
-            @submit.prevent="sendForm"
+          <router-link
+            to="/login"
+            class="text-sm text-app-muted hover:text-app-text"
           >
-            <CustomInput
-              id="link"
-              v-model="form.link"
-              type="url"
-              name="link"
-              :required="true"
-              placeholder="https://a-very-long-link.example"
-            />
-
-            <CustomInput
-              id="short"
-              v-model="form.short"
-              :label="'Your short link'"
-              type="text"
-              readonly
-              :disabled="form.short === ''"
-              placeholder="lnkr.pw/r/[code]"
-              @click="form.short === '' ? () => {} : copyToClipboard(form.short)"
-            />
-
-            <button
-              type="submit"
-              class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-primary-800 disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="loading || !form.link || form.link == ''"
-            >
-              Create Link
-            </button>
-          </form>
-
-          <p class="text-gray-100">
-            Already have an account? Log in
-            <router-link
-              to="/login"
-              class="underline"
-            >
-              Here
-            </router-link>
-          </p>
+            Sign in for more options
+          </router-link>
         </div>
-      </div>
-    </div>
-  </section>
+      </form>
+    </SurfaceCard>
+  </PageSection>
 </template>
 
 <script>
-import CustomInput from '../components/CustomInput.vue'
-
 import { notify } from '@kyvg/vue3-notification'
+import CustomInput from '../components/CustomInput.vue'
+import PageSection from '../components/PageSection.vue'
+import SurfaceCard from '../components/SurfaceCard.vue'
 
 export default {
   name: 'PublicLinkPage',
 
   components: {
-    CustomInput
+    CustomInput,
+    PageSection,
+    SurfaceCard
   },
 
   data () {
@@ -87,13 +82,16 @@ export default {
       try {
         await navigator.clipboard.writeText(mytext)
         notify({
-          title: 'Success!',
+          title: 'Success',
           type: 'success',
           text: 'Copied to clipboard'
         })
-      } catch ($e) {
-        // console.log($e);
-        // alert("Cannot copy");
+      } catch (error) {
+        notify({
+          title: 'Error',
+          type: 'error',
+          text: 'Unable to copy the short link'
+        })
       }
     },
 
@@ -120,13 +118,12 @@ export default {
 
     async sendForm () {
       const { link } = this.form
-      if (!link) {
+      if (!link || this.loading) {
         return
       }
 
       this.loading = true
       this.form.title = await this.generateTitle()
-      console.log(this.form)
 
       await this.$http
         .post('/link/create', this.form, {
@@ -143,7 +140,6 @@ export default {
 
           this.form.short = link.short_link
           if (this.form.short) {
-            // remove https:// or http:// from short link
             this.form.short = this.form.short.replace('https://', '')
             this.form.short = this.form.short.replace('http://', '')
           }
@@ -151,10 +147,9 @@ export default {
         .finally(() => {
           setTimeout(() => {
             this.loading = false
-          }, 1000)
+          }, 600)
         })
     }
   }
 }
 </script>
-

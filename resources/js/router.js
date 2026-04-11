@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import store from './store/index'
 
-// 1. Define route components.
-// These can be imported from other files
-import Home from './components/ExampleComponent.vue'
 import Login from './views/Login.vue'
 import Link from './views/Link.vue'
 import NotFound from './views/404.vue'

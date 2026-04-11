@@ -1,81 +1,104 @@
 <template>
-  <div class="md:container md:mx-auto mx-4">
-    <div class="my-5 lg:w-3/4">
-      <h1
-        class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-gray-300 my-4"
-      >
-        New Link
-      </h1>
-
-      <form @submit.prevent="sendNewLink">
-        <div class="flex justify flex-wrap">
-          <div class="my-2 w-full">
-            <label
-              for="title"
-              class="text-gray-300"
-            >Title</label>
-            <input
-              v-model="form.title"
-              required
-              type="text"
-              class="mr-1 bg-gray-50 outline-none border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="e.g Google drive portfolio link"
-            >
-          </div>
-
-          <p class="text-gray-300">
-            Link
-          </p>
-          <div class="flex w-full">
-            <input
-              v-model="form.link"
-              required
-              type="url"
-              class="mr-1 bg-gray-50 outline-none border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="https://yourlink.com"
-            >
-
-            <input
-              v-if="userIsPro"
-              v-model="form.custom"
-              type="text"
-              class="bg-gray-50 w-1/2 outline-none border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Custom unique code"
-            >
-          </div>
-
-          <div class="my-4">
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                v-model="form.private"
-                type="checkbox"
-                value
-                class="sr-only peer"
-              >
-              <div
-                class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"
-              />
-              <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Private</span>
-            </label>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          class="text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-primary-300 rounded-lg text-sm px-5 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-primary-800 my-4"
+  <PageSection
+    :title="pageTitle"
+    section-class="py-3 md:py-6"
+  >
+    <div class="max-w-3xl">
+      <SurfaceCard class="p-4 sm:p-5">
+        <form
+          class="space-y-5"
+          @submit.prevent="sendNewLink"
         >
-          Submit
-        </button>
-      </form>
+          <div class="grid gap-4">
+            <CustomInput
+              id="title"
+              v-model="form.title"
+              label="Title"
+              type="text"
+              placeholder="e.g. Portfolio drive link"
+              :required="true"
+              autocomplete="off"
+            />
+
+            <CustomInput
+              id="link"
+              v-model="form.link"
+              label="Destination URL"
+              type="url"
+              placeholder="https://yourlink.com"
+              :required="true"
+              autocomplete="url"
+            />
+
+            <CustomInput
+              v-if="userIsPro"
+              id="custom"
+              v-model="form.custom"
+              label="Custom code"
+              type="text"
+              placeholder="Optional unique code"
+            />
+
+            <div class="rounded-lg border border-app-border bg-app-muted-panel-soft p-3">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-app-text">
+                    Private
+                  </p>
+                  <p class="mt-1 text-sm text-app-muted">
+                    Pro only
+                  </p>
+                </div>
+
+                <label class="relative inline-flex cursor-pointer items-center">
+                  <input
+                    v-model="form.private"
+                    type="checkbox"
+                    class="peer sr-only"
+                  >
+                  <span class="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-cyan-500 dark:bg-slate-700" />
+                  <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <button
+              type="submit"
+              class="inline-flex items-center justify-center rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="loading"
+            >
+              {{ loading ? 'Saving...' : submitLabel }}
+            </button>
+
+            <router-link
+              :to="{ name: 'user.link' }"
+              class="text-sm text-app-muted hover:text-app-text"
+            >
+              Back to links
+            </router-link>
+          </div>
+        </form>
+      </SurfaceCard>
     </div>
-  </div>
+  </PageSection>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import CustomInput from '../components/CustomInput.vue'
+import PageSection from '../components/PageSection.vue'
+import SurfaceCard from '../components/SurfaceCard.vue'
 
 export default {
   name: 'LinkForm',
+
+  components: {
+    CustomInput,
+    PageSection,
+    SurfaceCard
+  },
 
   data () {
     return {
@@ -87,13 +110,21 @@ export default {
   },
 
   computed: {
-    ...mapState(['links', 'user']),
+    ...mapState(['user']),
 
     userIsPro () {
-      if (this.user) {
-        return this.user.is_pro
-      }
-      return false
+      return Boolean(this.user && this.user.is_pro)
+    },
+
+    isEditing () {
+      return Boolean(this.$route.params.id)
+    },
+
+    pageTitle () {
+      return this.isEditing ? 'Edit link' : 'Create a new link'
+    },
+    submitLabel () {
+      return this.isEditing ? 'Save Changes' : 'Create Link'
     }
   },
 
@@ -111,8 +142,7 @@ export default {
 
   methods: {
     loadLink (code) {
-      this.$http.get(`/link/get/${  code}`).then((res) => {
-        console.log(res)
+      this.$http.get(`/link/get/${code}`).then((res) => {
         this.form = { ...res.data.data }
         if (this.userIsPro) {
           this.form.custom = res.data.data.code
@@ -122,10 +152,10 @@ export default {
     },
 
     async sendNewLink () {
-      console.log('sending...')
       if (this.loading) {
         return
       }
+
       this.loading = true
 
       if (!this.userIsPro) {
@@ -134,7 +164,7 @@ export default {
 
       await this.$http
         .post('/link/create', this.form)
-        .then((res) => {
+        .then(() => {
           this.$router.push({ name: 'user.link' })
         })
         .finally(() => {

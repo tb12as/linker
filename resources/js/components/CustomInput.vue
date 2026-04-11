@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div :class="containerClass">
     <label
       v-if="label"
       :for="id"
-      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+      :class="labelClass"
     >{{ label }}</label>
 
     <input
@@ -12,13 +12,21 @@
       :type="type"
       :name="name"
       :placeholder="placeholder"
-      :class="inputClass + (disabled ? 'hover:cursor-not-allowed' : '')"
+      :autocomplete="autocomplete"
+      :class="inputClass + (disabled ? ' cursor-not-allowed opacity-60' : '')"
       :required="required"
       :disabled="disabled"
       :readonly="readonly"
       @input="$emit('update:modelValue', localValue)"
       @click.prevent="$emit('click')"
     >
+
+    <p
+      v-if="helper"
+      class="app-helper"
+    >
+      {{ helper }}
+    </p>
   </div>
 </template>
   
@@ -62,9 +70,25 @@ export default {
       type: String,
       default: ''
     },
+    helper: {
+      type: String,
+      default: ''
+    },
+    autocomplete: {
+      type: String,
+      default: 'off'
+    },
+    containerClass: {
+      type: String,
+      default: ''
+    },
+    labelClass: {
+      type: String,
+      default: 'app-label'
+    },
     inputClass: {
       type: String,
-      default: 'bg-gray-50 border border-gray-300 text-gray-900 outline-none sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+      default: 'app-input'
     }
   },
   emits: ['update:modelValue', 'click'],
