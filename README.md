@@ -62,6 +62,7 @@ Free link sharer api
 
 ## Todo
 - [x] <strike>Public short link create</strike>
+- [ ] Update the UI
 - [ ] Register
 - [ ] Logout (revoke token)
 - [ ] Add more API documentation
