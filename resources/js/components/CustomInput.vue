@@ -8,7 +8,7 @@
 
     <input
       :id="id"
-      v-model="localValue"
+      :value="modelValue"
       :type="type"
       :name="name"
       :placeholder="placeholder"
@@ -17,8 +17,8 @@
       :required="required"
       :disabled="disabled"
       :readonly="readonly"
-      @input="$emit('update:modelValue', localValue)"
-      @click.prevent="$emit('click')"
+      @input="$emit('update:modelValue', $event.target.value)"
+      @click="$emit('click')"
     >
 
     <p
@@ -91,17 +91,7 @@ export default {
       default: 'app-input'
     }
   },
-  emits: ['update:modelValue', 'click'],
-  computed: {
-    localValue: {
-      get () {
-        return this.modelValue
-      },
-      set (value) {
-        this.$emit('update:modelValue', value)
-      }
-    }
-  }
+  emits: ['update:modelValue', 'click']
 }
 </script>
   
