@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
@@ -7,12 +7,19 @@
     <title>Linker</title>
 
     <link rel="icon" href="{{ asset('logo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
 
     <script>
         (function () {
-            var theme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.classList.toggle('dark', theme === 'dark');
-            document.body && document.body.setAttribute('data-theme', theme);
+            var t = null;
+            try { t = localStorage.getItem('theme'); } catch (e) {}
+            if (t !== 'dark' && t !== 'light') {
+                t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+            document.documentElement.classList.toggle('dark', t === 'dark');
         })();
     </script>
 

@@ -1,18 +1,11 @@
 <template>
-  <div class="app-theme min-h-screen text-slate-100 antialiased">
-    <notifications position="top right" />
+  <div class="min-h-screen">
+    <notifications position="bottom right" />
     <AppShell
       :is-dark="theme === 'dark'"
       @toggle-theme="toggleTheme"
     >
-      <router-view v-slot="{ Component }">
-        <transition
-          name="page"
-          mode="out-in"
-        >
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <router-view />
     </AppShell>
   </div>
 </template>
@@ -29,31 +22,25 @@ export default {
 
   data () {
     return {
-      theme: 'dark'
+      // the blade head script already resolved the theme
+      theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
     }
   },
 
   created () {
-    this.theme = this.getStoredTheme()
-    this.applyTheme(this.theme)
     this.$store.dispatch('getUser')
   },
 
   methods: {
-    getStoredTheme () {
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
-      return ['dark', 'light'].includes(savedTheme) ? savedTheme : 'dark'
-    },
-
-    applyTheme (theme) {
-      document.documentElement.classList.toggle('dark', theme === 'dark')
-      document.body.dataset.theme = theme
-      localStorage.setItem(THEME_STORAGE_KEY, theme)
-    },
-
     toggleTheme () {
       this.theme = this.theme === 'dark' ? 'light' : 'dark'
-      this.applyTheme(this.theme)
+      document.documentElement.classList.toggle('dark', this.theme === 'dark')
+
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, this.theme)
+      } catch (e) {
+        // storage blocked, theme still applies for this visit
+      }
     }
   }
 }

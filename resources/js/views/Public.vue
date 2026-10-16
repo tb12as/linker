@@ -1,154 +1,115 @@
 <template>
   <PageSection
-    title="Create short link"
-    section-class="py-3 md:py-6"
+    title="Shorten a link"
+    description="Paste a long URL and get a short one you can share. No account needed."
   >
-    <SurfaceCard class="max-w-2xl p-4 sm:p-5">
-      <form
-        class="space-y-4"
-        @submit.prevent="sendForm"
-      >
-        <CustomInput
+    <form
+      class="max-w-2xl"
+      @submit.prevent="sendForm"
+    >
+      <label
+        for="link"
+        class="app-label"
+      >Long URL</label>
+      <div class="flex flex-col gap-2 sm:flex-row">
+        <input
           id="link"
           v-model="form.link"
-          label="URL"
           type="url"
           name="link"
-          :required="true"
+          class="app-input"
           autocomplete="url"
-          placeholder="https://a-very-long-link.example"
+          placeholder="https://example.com/a/very/long/path"
+          required
+        >
+        <button
+          type="submit"
+          class="btn-primary sm:w-32"
+          :disabled="loading || !form.link"
+        >
+          {{ loading ? 'Shortening...' : 'Shorten' }}
+        </button>
+      </div>
+
+      <div
+        v-if="short"
+        class="mt-6 rounded-panel border border-line bg-panel p-4"
+      >
+        <p class="text-sm text-muted">
+          Your short link
+        </p>
+        <ShortLink
+          class="mt-1"
+          :href="short"
         />
+      </div>
 
-        <CustomInput
-          id="short"
-          v-model="form.short"
-          label="Short link"
-          type="text"
-          readonly
-          :disabled="form.short === ''"
-          placeholder="lnkr.pw/r/[code]"
-          @click="form.short === '' ? () => {} : copyToClipboard(form.short)"
-        />
-
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <button
-            type="submit"
-            class="inline-flex items-center justify-center rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            :disabled="loading || !form.link"
-          >
-            {{ loading ? 'Creating...' : 'Create' }}
-          </button>
-
-          <router-link
-            to="/login"
-            class="text-sm text-app-muted hover:text-app-text"
-          >
-            Sign in for more options
-          </router-link>
-        </div>
-      </form>
-    </SurfaceCard>
+      <p class="mt-6 text-sm text-muted">
+        Want custom codes and a list of your links?
+        <router-link
+          :to="{ name: 'login' }"
+          class="font-medium text-ink underline underline-offset-4"
+        >
+          Sign in
+        </router-link>
+      </p>
+    </form>
   </PageSection>
 </template>
 
 <script>
-import { notify } from '@kyvg/vue3-notification'
-import CustomInput from '../components/CustomInput.vue'
 import PageSection from '../components/PageSection.vue'
-import SurfaceCard from '../components/SurfaceCard.vue'
+import ShortLink from '../components/ShortLink.vue'
 
 export default {
   name: 'PublicLinkPage',
 
   components: {
-    CustomInput,
     PageSection,
-    SurfaceCard
+    ShortLink
   },
 
   data () {
     return {
       loading: false,
-      waiting: undefined,
+      short: '',
       form: {
-        link: '',
-        short: ''
+        link: ''
       }
     }
   },
 
   methods: {
-    async copyURL (mytext) {
+    async getIp () {
+      // ipify can be blocked by the browser, the title just falls back
       try {
-        await navigator.clipboard.writeText(mytext)
-        notify({
-          title: 'Success',
-          type: 'success',
-          text: 'Copied to clipboard'
-        })
-      } catch (error) {
-        notify({
-          title: 'Error',
-          type: 'error',
-          text: 'Unable to copy the short link'
-        })
+        const res = await fetch('https://api.ipify.org?format=json')
+        const json = await res.json()
+        return json.ip || null
+      } catch (e) {
+        return null
       }
     },
 
-    copyToClipboard (text) {
-      clearTimeout(this.waiting)
-      this.waiting = setTimeout(() => {
-        this.copyURL(text)
-      }, 300)
-    },
-
-    async getIp () {
-      const data = await fetch('https://api.ipify.org?format=json')
-      const json = await data.json()
-      return json.ip || null
-    },
-
-    async generateTitle () {
-      const titles = ['Anonymous Link']
-      const ip = await this.getIp()
-      titles.push(ip || 'Unknown IP')
-
-      return titles.join(' - ')
-    },
-
     async sendForm () {
-      const { link } = this.form
-      if (!link || this.loading) {
+      if (!this.form.link || this.loading) {
         return
       }
 
       this.loading = true
-      this.form.title = await this.generateTitle()
+      this.short = ''
 
-      await this.$http
-        .post('/link/create', this.form, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': ''
-          }
-        })
-        .then((res) => {
-          const link = res.data.data || undefined
-          if (!link) {
-            return
-          }
+      const ip = await this.getIp()
+      const body = { link: this.form.link, title: `Anonymous Link - ${ip || 'Unknown IP'}` }
 
-          this.form.short = link.short_link
-          if (this.form.short) {
-            this.form.short = this.form.short.replace('https://', '')
-            this.form.short = this.form.short.replace('http://', '')
-          }
-        })
-        .finally(() => {
-          setTimeout(() => {
-            this.loading = false
-          }, 600)
-        })
+      try {
+        const res = await this.$http.post('/link/create', body, { headers: { Authorization: '' } })
+        this.short = (res.data.data && res.data.data.short_link) || ''
+      } catch (e) {
+        // the axios interceptor already shows the error
+      } finally {
+        this.loading = false
+      }
     }
   }
 }
