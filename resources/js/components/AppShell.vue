@@ -80,6 +80,17 @@
             Sign in
           </router-link>
 
+          <button
+            v-if="pwa.canInstall"
+            type="button"
+            class="btn-icon"
+            aria-label="Install app"
+            title="Install app"
+            @click="install"
+          >
+            <Download class="h-4 w-4" />
+          </button>
+
           <ThemeToggle
             :is-dark="isDark"
             @toggle="$emit('toggle-theme')"
@@ -144,8 +155,9 @@
 </template>
 
 <script>
-import { ChevronDown, Menu as MenuIcon, X as XIcon } from 'lucide-vue-next'
+import { ChevronDown, Download, Menu as MenuIcon, X as XIcon } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
+import pwa, { install } from '../pwa'
 
 const nav = [
   { name: 'user.link', label: 'Links' },
@@ -155,6 +167,7 @@ const nav = [
 export default {
   components: {
     ChevronDown,
+    Download,
     MenuIcon,
     ThemeToggle,
     XIcon
@@ -172,6 +185,7 @@ export default {
   data () {
     return {
       nav,
+      pwa,
       isMobileMenuOpen: false,
       isAccountOpen: false
     }
@@ -208,6 +222,8 @@ export default {
   },
 
   methods: {
+    install,
+
     isActive (name) {
       return this.$route.name === name
     },

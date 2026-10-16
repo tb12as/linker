@@ -12,6 +12,7 @@ import { createApp } from 'vue'
 
 import axios from './axios.js'
 import store from './store/index'
+import { initPwa } from './pwa'
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -50,3 +51,5 @@ app.use(store)
  */
 
 app.mount('#app')
+
+initPwa()
