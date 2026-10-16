@@ -1,6 +1,6 @@
 <template>
   <PageSection title="Settings">
-    <LoadingState
+    <SettingsSkeleton
       v-if="status === 'loading'"
       label="Loading settings..."
     />
@@ -96,8 +96,8 @@
 
 <script>
 import EmptyState from '../components/EmptyState.vue'
-import LoadingState from '../components/LoadingState.vue'
 import PageSection from '../components/PageSection.vue'
+import SettingsSkeleton from '../components/SettingsSkeleton.vue'
 import SurfaceCard from '../components/SurfaceCard.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 
@@ -106,8 +106,8 @@ export default {
 
   components: {
     EmptyState,
-    LoadingState,
     PageSection,
+    SettingsSkeleton,
     SurfaceCard,
     ToggleSwitch
   },
