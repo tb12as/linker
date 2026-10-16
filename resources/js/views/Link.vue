@@ -6,7 +6,7 @@
     />
 
     <div class="mt-4">
-      <LoadingState
+      <LinkListSkeleton
         v-if="status === 'loading'"
         label="Loading your links..."
       />
@@ -68,8 +68,10 @@
       </template>
     </div>
 
-    <LoadingState
+    <LinkListSkeleton
       v-if="loadingMore"
+      class="mt-4"
+      :rows="2"
       label="Loading more links..."
     />
 
@@ -127,7 +129,7 @@ import EmptyState from '../components/EmptyState.vue'
 import LinkCard from '../components/LinkCard.vue'
 import LinkTable from '../components/LinkTable.vue'
 import LinksToolbar from '../components/LinksToolbar.vue'
-import LoadingState from '../components/LoadingState.vue'
+import LinkListSkeleton from '../components/LinkListSkeleton.vue'
 import Modal from '../components/Modal.vue'
 import PageSection from '../components/PageSection.vue'
 import SurfaceCard from '../components/SurfaceCard.vue'
@@ -139,8 +141,8 @@ export default {
     EmptyState,
     LinkCard,
     LinkTable,
+    LinkListSkeleton,
     LinksToolbar,
-    LoadingState,
     Modal,
     PageSection,
     SurfaceCard

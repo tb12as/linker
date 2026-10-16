@@ -1,7 +1,8 @@
 <template>
   <PageSection :title="isEditing ? 'Edit link' : 'New link'">
-    <LoadingState
+    <FormSkeleton
       v-if="status === 'loading'"
+      :fields="userIsPro ? 3 : 2"
       label="Loading link..."
     />
 
@@ -95,7 +96,7 @@
 import { mapState } from 'vuex'
 import CustomInput from '../components/CustomInput.vue'
 import EmptyState from '../components/EmptyState.vue'
-import LoadingState from '../components/LoadingState.vue'
+import FormSkeleton from '../components/FormSkeleton.vue'
 import PageSection from '../components/PageSection.vue'
 import ToggleSwitch from '../components/ToggleSwitch.vue'
 
@@ -105,7 +106,7 @@ export default {
   components: {
     CustomInput,
     EmptyState,
-    LoadingState,
+    FormSkeleton,
     PageSection,
     ToggleSwitch
   },
