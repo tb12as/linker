@@ -1,107 +1,118 @@
 <template>
-  <PageSection
-    :title="pageTitle"
-    section-class="py-3 md:py-6"
-  >
-    <div class="max-w-3xl">
-      <SurfaceCard class="p-4 sm:p-5">
-        <form
-          class="space-y-5"
-          @submit.prevent="sendNewLink"
+  <PageSection :title="isEditing ? 'Edit link' : 'New link'">
+    <LoadingState
+      v-if="status === 'loading'"
+      label="Loading link..."
+    />
+
+    <EmptyState
+      v-else-if="status === 'error'"
+      tone="error"
+      title="This link could not be loaded"
+      description="It may have been deleted, or the connection dropped."
+    >
+      <template #actions>
+        <router-link
+          :to="{ name: 'user.link' }"
+          class="btn-quiet"
         >
-          <div class="grid gap-4">
-            <CustomInput
-              id="title"
-              v-model="form.title"
-              label="Title"
-              type="text"
-              placeholder="e.g. Portfolio drive link"
-              :required="true"
-              autocomplete="off"
-            />
+          Back to links
+        </router-link>
+      </template>
+    </EmptyState>
 
-            <CustomInput
-              id="link"
-              v-model="form.link"
-              label="Destination URL"
-              type="url"
-              placeholder="https://yourlink.com"
-              :required="true"
-              autocomplete="url"
-            />
+    <form
+      v-else
+      class="max-w-xl space-y-5"
+      @submit.prevent="sendNewLink"
+    >
+      <CustomInput
+        id="title"
+        v-model="form.title"
+        label="Title"
+        type="text"
+        helper="Only you see this. It helps you find the link later."
+        :required="true"
+      />
 
-            <CustomInput
-              v-if="userIsPro"
-              id="custom"
-              v-model="form.custom"
-              label="Custom code"
-              type="text"
-              placeholder="Optional unique code"
-            />
+      <CustomInput
+        id="link"
+        v-model="form.link"
+        label="Destination URL"
+        type="url"
+        placeholder="https://example.com/page"
+        :required="true"
+        autocomplete="url"
+      />
 
-            <div class="rounded-lg border border-app-border bg-app-muted-panel-soft p-3">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm font-semibold text-app-text">
-                    Private
-                  </p>
-                  <p class="mt-1 text-sm text-app-muted">
-                    Pro only
-                  </p>
-                </div>
+      <CustomInput
+        v-if="userIsPro"
+        id="custom"
+        v-model="form.custom"
+        label="Custom code"
+        type="text"
+        helper="At least 3 characters. Leave empty for a random code."
+      />
 
-                <label class="relative inline-flex cursor-pointer items-center">
-                  <input
-                    v-model="form.private"
-                    type="checkbox"
-                    class="peer sr-only"
-                  >
-                  <span class="h-7 w-12 rounded-full bg-slate-300 transition peer-checked:bg-cyan-500 dark:bg-slate-700" />
-                  <span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5" />
-                </label>
-              </div>
-            </div>
-          </div>
+      <label
+        class="flex items-center justify-between gap-4 rounded-panel border border-line bg-panel p-4"
+        :class="userIsPro ? 'cursor-pointer' : 'cursor-not-allowed'"
+      >
+        <span class="min-w-0">
+          <span class="block text-sm font-medium text-ink">Private link</span>
+          <span class="mt-0.5 block text-sm text-muted">
+            {{ userIsPro ? 'Hidden from public search.' : 'Available on Pro accounts.' }}
+          </span>
+        </span>
 
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <button
-              type="submit"
-              class="inline-flex items-center justify-center rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-              :disabled="loading"
-            >
-              {{ loading ? 'Saving...' : submitLabel }}
-            </button>
+        <ToggleSwitch
+          v-model="form.private"
+          :disabled="!userIsPro"
+        />
+      </label>
 
-            <router-link
-              :to="{ name: 'user.link' }"
-              class="text-sm text-app-muted hover:text-app-text"
-            >
-              Back to links
-            </router-link>
-          </div>
-        </form>
-      </SurfaceCard>
-    </div>
+      <div class="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+        <button
+          type="submit"
+          class="btn-primary"
+          :disabled="loading"
+        >
+          {{ submitText }}
+        </button>
+
+        <router-link
+          :to="{ name: 'user.link' }"
+          class="text-link self-center"
+        >
+          Back to links
+        </router-link>
+      </div>
+    </form>
   </PageSection>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import CustomInput from '../components/CustomInput.vue'
+import EmptyState from '../components/EmptyState.vue'
+import LoadingState from '../components/LoadingState.vue'
 import PageSection from '../components/PageSection.vue'
-import SurfaceCard from '../components/SurfaceCard.vue'
+import ToggleSwitch from '../components/ToggleSwitch.vue'
 
 export default {
   name: 'LinkForm',
 
   components: {
     CustomInput,
+    EmptyState,
+    LoadingState,
     PageSection,
-    SurfaceCard
+    ToggleSwitch
   },
 
   data () {
     return {
+      status: this.$route.params.id ? 'loading' : 'ready',
       loading: false,
       form: {
         private: false
@@ -120,17 +131,12 @@ export default {
       return Boolean(this.$route.params.id)
     },
 
-    pageTitle () {
-      return this.isEditing ? 'Edit link' : 'Create a new link'
-    },
-    submitLabel () {
-      return this.isEditing ? 'Save Changes' : 'Create Link'
-    }
-  },
+    submitText () {
+      if (this.loading) {
+        return 'Saving...'
+      }
 
-  beforeMount () {
-    if (this.$route.params.id) {
-      this.loadLink(this.$route.params.id)
+      return this.isEditing ? 'Save changes' : 'Create short link'
     }
   },
 
@@ -138,17 +144,27 @@ export default {
     if (this.userIsPro) {
       this.form.private = true
     }
+
+    if (this.isEditing) {
+      this.loadLink(this.$route.params.id)
+    }
   },
 
   methods: {
-    loadLink (code) {
-      this.$http.get(`/link/get/${code}`).then((res) => {
+    async loadLink (code) {
+      try {
+        const res = await this.$http.get(`/link/get/${code}`)
         this.form = { ...res.data.data }
+
         if (this.userIsPro) {
           this.form.custom = res.data.data.code
           this.form.private = res.data.data.is_private
         }
-      })
+
+        this.status = 'ready'
+      } catch (e) {
+        this.status = 'error'
+      }
     },
 
     async sendNewLink () {
@@ -158,18 +174,19 @@ export default {
 
       this.loading = true
 
+      const body = { ...this.form }
       if (!this.userIsPro) {
-        delete this.form.private
+        delete body.private
       }
 
-      await this.$http
-        .post('/link/create', this.form)
-        .then(() => {
-          this.$router.push({ name: 'user.link' })
-        })
-        .finally(() => {
-          this.loading = false
-        })
+      try {
+        await this.$http.post('/link/create', body)
+        this.$router.push({ name: 'user.link' })
+      } catch (e) {
+        // the axios interceptor already shows the error
+      } finally {
+        this.loading = false
+      }
     }
   }
 }

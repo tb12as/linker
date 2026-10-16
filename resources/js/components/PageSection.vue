@@ -1,19 +1,13 @@
 <template>
-  <section :class="sectionClass">
-    <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-      <div class="space-y-1">
-        <p
-          v-if="eyebrow"
-          class="text-[11px] font-semibold uppercase tracking-[0.24em] text-app-muted"
-        >
-          {{ eyebrow }}
-        </p>
-        <h1 class="text-2xl font-semibold tracking-tight text-app-text sm:text-3xl">
+  <section class="pt-8 sm:pt-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div class="min-w-0">
+        <h1 class="font-serif text-4xl leading-tight text-ink sm:text-5xl">
           {{ title }}
         </h1>
         <p
           v-if="description"
-          class="max-w-2xl text-sm text-app-muted"
+          class="mt-2 max-w-xl text-sm leading-6 text-muted"
         >
           {{ description }}
         </p>
@@ -21,16 +15,13 @@
 
       <div
         v-if="$slots.actions"
-        class="flex flex-wrap items-center gap-2"
+        class="flex shrink-0 flex-wrap items-center gap-2"
       >
         <slot name="actions" />
       </div>
     </div>
 
-    <div
-      v-if="$slots.default"
-      class="mt-5"
-    >
+    <div class="mt-6">
       <slot />
     </div>
   </section>
@@ -39,10 +30,6 @@
 <script>
 export default {
   props: {
-    eyebrow: {
-      type: String,
-      default: ''
-    },
     title: {
       type: String,
       required: true
@@ -50,10 +37,6 @@ export default {
     description: {
       type: String,
       default: ''
-    },
-    sectionClass: {
-      type: String,
-      default: 'py-4'
     }
   }
 }

@@ -1,205 +1,169 @@
 <template>
-  <div class="min-h-screen bg-app text-app-text transition-colors duration-300">
-    <header class="relative z-10 px-4 py-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl rounded-xl border border-app-border bg-app-panel-soft px-4 py-3 shadow-soft">
-        <div class="flex items-center justify-between gap-3">
+  <div class="min-h-screen">
+    <header
+      class="border-b border-line bg-canvas/95"
+      @keydown.esc="closeMenus"
+    >
+      <div class="mx-auto flex h-16 max-w-5xl items-center gap-2 px-4 sm:px-6">
+        <router-link
+          :to="brandTarget"
+          class="mr-6 inline-flex min-h-[44px] items-center font-serif text-2xl text-ink"
+        >
+          Linker
+        </router-link>
+
+        <nav
+          v-if="user"
+          class="hidden items-center gap-1 md:flex"
+          aria-label="Main"
+        >
           <router-link
-            :to="brandTarget"
-            class="inline-flex items-center gap-2"
+            v-for="item in nav"
+            :key="item.name"
+            :to="{ name: item.name }"
+            class="inline-flex h-16 items-center border-b-2 px-3 text-sm font-medium"
+            :class="isActive(item.name) ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-ink'"
+            :aria-current="isActive(item.name) ? 'page' : null"
           >
-            <Link2 class="h-4 w-4 text-app-muted" />
-            <span class="text-base font-semibold text-app-text">Linker</span>
+            {{ item.label }}
+          </router-link>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-1">
+          <div
+            v-if="user"
+            ref="account"
+            class="relative hidden md:block"
+          >
+            <button
+              ref="accountButton"
+              type="button"
+              class="btn gap-1.5 px-3 text-ink hover:bg-subtle"
+              aria-controls="account-menu"
+              :aria-expanded="isAccountOpen ? 'true' : 'false'"
+              @click="isAccountOpen = !isAccountOpen"
+            >
+              <span class="max-w-[12rem] truncate">{{ user.username }}</span>
+              <ChevronDown
+                class="h-4 w-4 text-muted"
+                :class="isAccountOpen ? 'rotate-180' : ''"
+              />
+            </button>
+
+            <div
+              v-if="isAccountOpen"
+              id="account-menu"
+              class="absolute right-0 top-full z-40 mt-1 w-48 rounded-panel border border-line bg-panel p-1
+                shadow-[0_12px_32px_rgb(28_28_28_/_0.12)]"
+            >
+              <router-link
+                :to="{ name: 'setting' }"
+                class="flex min-h-[44px] items-center rounded-control px-3 text-sm text-ink hover:bg-subtle"
+              >
+                Settings
+              </router-link>
+              <button
+                type="button"
+                class="flex min-h-[44px] w-full items-center rounded-control px-3 text-sm text-ink hover:bg-subtle"
+                @click="logout"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+
+          <router-link
+            v-else-if="!user && $route.name !== 'login'"
+            :to="{ name: 'login' }"
+            class="btn-quiet"
+          >
+            Sign in
           </router-link>
 
+          <ThemeToggle
+            :is-dark="isDark"
+            @toggle="$emit('toggle-theme')"
+          />
+
           <button
+            v-if="user"
             type="button"
-            class="inline-flex items-center justify-center rounded-md border border-app-border bg-app-muted-panel p-2 text-app-text md:hidden"
+            class="btn-icon md:hidden"
+            aria-controls="mobile-menu"
             :aria-expanded="isMobileMenuOpen ? 'true' : 'false'"
-            aria-label="Toggle navigation menu"
-            @click="toggleMobileMenu"
+            aria-label="Menu"
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
           >
             <XIcon
               v-if="isMobileMenuOpen"
-              class="h-4 w-4"
+              class="h-5 w-5"
             />
             <MenuIcon
               v-else
-              class="h-4 w-4"
+              class="h-5 w-5"
             />
           </button>
-
-          <div class="hidden md:flex md:flex-1 md:items-center md:justify-between md:gap-3">
-            <nav
-              v-if="user"
-              class="ml-6 flex flex-wrap items-center gap-2"
-            >
-              <router-link
-                v-for="item in authenticatedNav"
-                :key="item.name"
-                :to="{ name: item.name }"
-                class="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition"
-                :class="isActive(item.name) ? 'bg-app-muted-panel text-app-text' : 'text-app-muted hover:text-app-text'"
-              >
-                <component
-                  :is="item.icon"
-                  class="h-4 w-4"
-                />
-                <span>{{ item.label }}</span>
-              </router-link>
-            </nav>
-
-            <div class="flex items-center gap-2">
-              <ThemeToggle
-                :is-dark="isDark"
-                @toggle="$emit('toggle-theme')"
-              />
-
-              <template v-if="user">
-                <div class="hidden items-center gap-2 rounded-md border border-app-border bg-app-muted-panel px-3 py-1.5 text-sm text-app-muted lg:inline-flex">
-                  <User class="h-4 w-4" />
-                  <span>{{ user.username }}</span>
-                </div>
-                <button
-                  type="button"
-                  class="inline-flex items-center justify-center gap-2 rounded-lg bg-app-button px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
-                  @click="logout"
-                >
-                  <LogOut class="h-4 w-4" />
-                  <span>Logout</span>
-                </button>
-              </template>
-
-              <template v-else>
-                <router-link
-                  v-if="$route.name !== 'public'"
-                  :to="{ name: 'public' }"
-                  class="inline-flex items-center justify-center gap-2 rounded-md border border-app-border px-3 py-1.5 text-sm font-medium text-app-text transition hover:bg-app-muted-panel"
-                >
-                  <House class="h-4 w-4" />
-                  <span>Home</span>
-                </router-link>
-                <router-link
-                  v-if="$route.name !== 'login'"
-                  :to="{ name: 'login' }"
-                  class="inline-flex items-center justify-center gap-2 rounded-lg bg-app-button px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
-                >
-                  <LogIn class="h-4 w-4" />
-                  <span>Sign in</span>
-                </router-link>
-              </template>
-            </div>
-          </div>
-        </div>
-
-        <div
-          v-if="isMobileMenuOpen"
-          class="mt-3 border-t border-app-border pt-3 md:hidden"
-        >
-          <div class="grid gap-2">
-            <template v-if="user">
-              <div class="inline-flex items-center gap-2 rounded-md border border-app-border bg-app-muted-panel px-3 py-2 text-sm text-app-muted">
-                <User class="h-4 w-4" />
-                <span>{{ user.username }}</span>
-              </div>
-
-              <router-link
-                v-for="item in authenticatedNav"
-                :key="item.name"
-                :to="{ name: item.name }"
-                class="inline-flex items-center gap-3 rounded-md border border-app-border px-3 py-2 text-sm font-medium text-app-text transition hover:bg-app-muted-panel"
-                @click="closeMobileMenu"
-              >
-                <component
-                  :is="item.icon"
-                  class="h-4 w-4 text-app-muted"
-                />
-                <span>{{ item.label }}</span>
-              </router-link>
-            </template>
-
-            <template v-else>
-              <router-link
-                v-if="$route.name !== 'public'"
-                :to="{ name: 'public' }"
-                class="inline-flex items-center gap-3 rounded-md border border-app-border px-3 py-2 text-sm font-medium text-app-text transition hover:bg-app-muted-panel"
-                @click="closeMobileMenu"
-              >
-                <House class="h-4 w-4 text-app-muted" />
-                <span>Home</span>
-              </router-link>
-              <router-link
-                v-if="$route.name !== 'login'"
-                :to="{ name: 'login' }"
-                class="inline-flex items-center gap-3 rounded-lg bg-app-button px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                @click="closeMobileMenu"
-              >
-                <LogIn class="h-4 w-4" />
-                <span>Sign in</span>
-              </router-link>
-            </template>
-
-            <button
-              type="button"
-              class="inline-flex items-center gap-3 rounded-md border border-app-border px-3 py-2 text-sm font-medium text-app-text transition hover:bg-app-muted-panel"
-              @click="toggleThemeFromMenu"
-            >
-              <Sun
-                v-if="isDark"
-                class="h-4 w-4 text-app-muted"
-              />
-              <Moon
-                v-else
-                class="h-4 w-4 text-app-muted"
-              />
-              <span>{{ isDark ? 'Light mode' : 'Dark mode' }}</span>
-            </button>
-
-            <button
-              v-if="user"
-              type="button"
-              class="inline-flex items-center gap-3 rounded-lg bg-app-button px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              @click="logout"
-            >
-              <LogOut class="h-4 w-4" />
-              <span>Logout</span>
-            </button>
-          </div>
         </div>
       </div>
+
+      <nav
+        v-if="user && isMobileMenuOpen"
+        id="mobile-menu"
+        class="border-t border-line px-4 pb-3 pt-2 md:hidden"
+        aria-label="Main"
+      >
+        <p class="truncate py-2 text-sm text-muted">
+          Signed in as {{ user.username }}
+        </p>
+
+        <router-link
+          v-for="item in [...nav, { name: 'setting', label: 'Settings' }]"
+          :key="item.name"
+          :to="{ name: item.name }"
+          class="flex min-h-[44px] items-center rounded-control px-2 text-base"
+          :class="isActive(item.name) ? 'font-semibold text-ink' : 'text-muted hover:text-ink'"
+          :aria-current="isActive(item.name) ? 'page' : null"
+        >
+          {{ item.label }}
+        </router-link>
+
+        <button
+          type="button"
+          class="flex min-h-[44px] w-full items-center rounded-control px-2 text-base text-muted hover:text-ink"
+          @click="logout"
+        >
+          Sign out
+        </button>
+      </nav>
     </header>
 
-    <main class="relative z-10 px-4 pb-8 sm:px-6 lg:px-8 lg:pb-10">
-      <div class="mx-auto max-w-7xl">
-        <slot />
-      </div>
+    <main class="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
+      <slot />
     </main>
   </div>
 </template>
 
 <script>
-import { House, Link2, LogIn, LogOut, Menu as MenuIcon, Moon, Plus, Settings, Sun, User, X as XIcon } from 'lucide-vue-next'
+import { ChevronDown, Menu as MenuIcon, X as XIcon } from 'lucide-vue-next'
 import ThemeToggle from './ThemeToggle.vue'
+
+const nav = [
+  { name: 'user.link', label: 'Links' },
+  { name: 'link.create', label: 'New link' }
+]
 
 export default {
   components: {
-    House,
-    Link2,
-    LogIn,
-    LogOut,
+    ChevronDown,
     MenuIcon,
-    Moon,
-    Plus,
-    Settings,
-    Sun,
     ThemeToggle,
-    User,
     XIcon
   },
 
   props: {
     isDark: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
 
@@ -207,7 +171,9 @@ export default {
 
   data () {
     return {
-      isMobileMenuOpen: false
+      nav,
+      isMobileMenuOpen: false,
+      isAccountOpen: false
     }
   },
 
@@ -218,21 +184,27 @@ export default {
 
     brandTarget () {
       return this.user ? { name: 'user.link' } : { name: 'public' }
-    },
-
-    authenticatedNav () {
-      return [
-        { name: 'user.link', label: 'Links', icon: Link2 },
-        { name: 'link.create', label: 'New Link', icon: Plus },
-        { name: 'setting', label: 'Settings', icon: Settings }
-      ]
     }
   },
 
   watch: {
     $route () {
-      this.closeMobileMenu()
+      this.isMobileMenuOpen = false
+      this.isAccountOpen = false
+    },
+
+    isAccountOpen (open) {
+      // close on any click outside the account menu
+      if (open) {
+        document.addEventListener('click', this.onOutsideClick)
+      } else {
+        document.removeEventListener('click', this.onOutsideClick)
+      }
     }
+  },
+
+  beforeUnmount () {
+    document.removeEventListener('click', this.onOutsideClick)
   },
 
   methods: {
@@ -240,17 +212,19 @@ export default {
       return this.$route.name === name
     },
 
-    toggleMobileMenu () {
-      this.isMobileMenuOpen = !this.isMobileMenuOpen
+    onOutsideClick (e) {
+      if (!this.$refs.account || !this.$refs.account.contains(e.target)) {
+        this.isAccountOpen = false
+      }
     },
 
-    closeMobileMenu () {
+    closeMenus () {
+      if (this.isAccountOpen) {
+        this.isAccountOpen = false
+        this.$refs.accountButton.focus()
+      }
+
       this.isMobileMenuOpen = false
-    },
-
-    toggleThemeFromMenu () {
-      this.$emit('toggle-theme')
-      this.closeMobileMenu()
     },
 
     logout () {
@@ -258,7 +232,8 @@ export default {
       this.$store.commit('setUser', null)
       this.$store.commit('setLinks', [])
       this.$store.commit('setSearch', null)
-      this.closeMobileMenu()
+      this.isMobileMenuOpen = false
+      this.isAccountOpen = false
       this.$router.push({ name: 'login' })
     }
   }

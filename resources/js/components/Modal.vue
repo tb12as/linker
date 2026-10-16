@@ -1,87 +1,64 @@
 <template>
-  <transition
-    name="modal-fade"
-    appear
+  <div
+    v-if="isModalOpen"
+    class="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+    @keydown.esc="cancel"
   >
     <div
-      v-if="isModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      class="absolute inset-0 bg-black/60"
+      @click="cancel"
+    />
+
+    <div
+      class="relative w-full max-w-md rounded-panel border border-line bg-panel p-5 shadow-[0_16px_40px_rgb(0_0_0_/_0.35)]"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="titleId"
     >
-      <div
-        class="absolute inset-0 bg-slate-950/70"
-        @click="cancel"
-      />
-
-      <transition
-        name="modal-scale"
-        appear
+      <h2
+        :id="titleId"
+        class="font-serif text-2xl text-ink"
       >
-        <div
-          v-if="isModalOpen"
-          class="relative z-10 w-full max-w-sm overflow-hidden rounded-lg border border-app-border bg-app-panel-soft p-3 shadow-soft"
+        {{ title }}
+      </h2>
+      <p
+        v-if="description"
+        class="mt-1 text-sm text-muted"
+      >
+        {{ description }}
+      </p>
+
+      <div class="mt-4 max-h-[55vh] overflow-y-auto">
+        <slot />
+      </div>
+
+      <div class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <button
+          ref="cancelButton"
+          type="button"
+          class="btn-quiet"
+          @click="cancel"
         >
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h2 class="text-base font-semibold text-app-text">
-                {{ title }}
-              </h2>
-              <p
-                v-if="description"
-                class="mt-1 text-xs text-app-muted"
-              >
-                {{ description }}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              class="inline-flex items-center justify-center rounded-md border border-app-border p-1.5 text-app-muted hover:bg-app-muted-panel hover:text-app-text"
-              aria-label="Close modal"
-              @click="cancel"
-            >
-              <X class="h-4 w-4" />
-            </button>
-          </div>
-
-          <div class="mt-3 max-h-[55vh] overflow-y-auto pr-1">
-            <slot />
-          </div>
-
-          <div class="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              class="inline-flex items-center justify-center gap-2 rounded-md border border-app-border px-3 py-2 text-sm font-medium text-app-text hover:bg-app-muted-panel"
-              @click="cancel"
-            >
-              <X class="h-4 w-4" />
-              {{ cancelText }}
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium"
-              :class="acceptClass"
-              @click="handleAccept"
-            >
-              <Check class="h-4 w-4" />
-              {{ acceptText }}
-            </button>
-          </div>
-        </div>
-      </transition>
+          {{ cancelText }}
+        </button>
+        <button
+          type="button"
+          :class="acceptClass"
+          :disabled="busy"
+          @click="$emit('accept')"
+        >
+          {{ busy ? busyText : acceptText }}
+        </button>
+      </div>
     </div>
-  </transition>
+  </div>
 </template>
 
 <script>
-import { Check, X } from 'lucide-vue-next'
+let uid = 0
 
 export default {
   name: 'CustomModal',
-
-  components: {
-    Check,
-    X
-  },
 
   props: {
     title: {
@@ -100,13 +77,17 @@ export default {
       type: String,
       default: 'Accept'
     },
+    busyText: {
+      type: String,
+      default: 'Working...'
+    },
+    busy: {
+      type: Boolean,
+      default: false
+    },
     acceptClass: {
       type: String,
-      default: 'bg-app-button text-white rounded-lg hover:opacity-90'
-    },
-    onAccept: {
-      type: Function,
-      default: () => {}
+      default: 'btn-primary'
     }
   },
 
@@ -114,21 +95,25 @@ export default {
 
   data () {
     return {
-      isModalOpen: false
+      isModalOpen: false,
+      returnFocus: null,
+      titleId: `modal-title-${++uid}`
     }
   },
 
   methods: {
     openModal () {
+      this.returnFocus = document.activeElement
       this.isModalOpen = true
+      this.$nextTick(() => this.$refs.cancelButton.focus())
     },
 
     cancel () {
       this.isModalOpen = false
-    },
 
-    handleAccept () {
-      this.$emit('accept')
+      if (this.returnFocus && this.returnFocus.isConnected) {
+        this.returnFocus.focus()
+      }
     }
   }
 }

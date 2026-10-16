@@ -1,52 +1,75 @@
 <template>
-  <PageSection
-    title="Your links"
-    section-class="py-3 md:py-6"
-  >
+  <PageSection title="Your links">
     <LinksToolbar
       v-model="searchInput"
       @update:model-value="searchLink"
     />
 
-    <EmptyState
-      v-if="links.length === 0 && !loading"
-      class="mt-6"
-      title="No links"
-      description=""
-    >
-      <template #actions>
-        <router-link
-          :to="{ name: 'link.create' }"
-          class="inline-flex items-center gap-2 rounded-lg bg-app-button px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
-        >
-          <Plus class="h-4 w-4" />
-          Create
-        </router-link>
-      </template>
-    </EmptyState>
-
-    <div
-      v-else
-      class="mt-5"
-    >
-      <LinkTable
-        :links="links"
-        @delete="deleteLink"
+    <div class="mt-4">
+      <LoadingState
+        v-if="status === 'loading'"
+        label="Loading your links..."
       />
 
-      <div class="grid gap-4 md:hidden">
-        <LinkCard
-          v-for="(link, index) in links"
-          :key="link.code"
-          :link="link"
-          :index="index"
+      <EmptyState
+        v-else-if="status === 'error'"
+        tone="error"
+        title="Your links could not be loaded"
+        description="Check your connection and try again."
+      >
+        <template #actions>
+          <button
+            type="button"
+            class="btn-quiet"
+            @click="load"
+          >
+            Try again
+          </button>
+        </template>
+      </EmptyState>
+
+      <EmptyState
+        v-else-if="links.length === 0 && link_search"
+        :title="`No links match &quot;${link_search}&quot;`"
+        description="Search looks at link titles and short codes."
+      />
+
+      <EmptyState
+        v-else-if="links.length === 0"
+        title="No links yet"
+        description="Links you shorten while signed in show up here."
+      >
+        <template #actions>
+          <router-link
+            :to="{ name: 'link.create' }"
+            class="btn-primary"
+          >
+            Shorten your first link
+          </router-link>
+        </template>
+      </EmptyState>
+
+      <template v-else>
+        <LinkTable
+          :links="links"
           @delete="deleteLink"
         />
-      </div>
+
+        <SurfaceCard class="md:hidden">
+          <ul class="divide-y divide-line px-4">
+            <LinkCard
+              v-for="link in links"
+              :key="link.code"
+              :link="link"
+              @delete="deleteLink"
+            />
+          </ul>
+        </SurfaceCard>
+      </template>
     </div>
 
     <LoadingState
-      v-if="loading"
+      v-if="loadingMore"
       label="Loading more links..."
     />
 
@@ -57,53 +80,48 @@
 
     <Modal
       ref="modal"
-      title="Delete link?"
-      accept-text="Delete"
-      accept-class="bg-red-600 text-white hover:bg-red-500"
-      @accept="acceptDelete()"
+      title="Delete this link?"
+      description="The short link stops working right away. This cannot be undone."
+      accept-text="Delete link"
+      busy-text="Deleting..."
+      :busy="deleting"
+      accept-class="btn bg-danger text-white hover:bg-danger/90"
+      @accept="acceptDelete"
     >
-      <div
+      <dl
         v-if="delete_temp"
         class="space-y-3 text-sm"
       >
-        <div class="rounded-lg border border-app-border bg-app-muted-panel-soft p-3">
-          <p class="text-[11px] font-medium uppercase tracking-[0.2em] text-app-muted">
+        <div>
+          <dt class="text-muted">
             Title
-          </p>
-          <p class="mt-1 text-app-text">
+          </dt>
+          <dd class="mt-0.5 break-words text-ink">
             {{ delete_temp.title }}
-          </p>
+          </dd>
         </div>
-
-        <div class="rounded-lg border border-app-border bg-app-muted-panel-soft p-3">
-          <p class="text-[11px] font-medium uppercase tracking-[0.2em] text-app-muted">
-            Target
-          </p>
-          <p class="mt-1 break-all text-app-text">
+        <div>
+          <dt class="text-muted">
+            Short link
+          </dt>
+          <dd class="mt-0.5 break-all font-mono text-ink">
+            {{ delete_temp.short_link.replace(/^https?:\/\//, '') }}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-muted">
+            Destination
+          </dt>
+          <dd class="mt-0.5 break-all text-ink">
             {{ delete_temp.link }}
-          </p>
+          </dd>
         </div>
-
-        <div class="rounded-lg border border-app-border bg-app-muted-panel-soft p-3">
-          <p class="text-[11px] font-medium uppercase tracking-[0.2em] text-app-muted">
-            Short
-          </p>
-          <a
-            :href="delete_temp.short_link"
-            target="_blank"
-            rel="noreferrer"
-            class="mt-1 block break-all text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            {{ delete_temp.short_link }}
-          </a>
-        </div>
-      </div>
+      </dl>
     </Modal>
   </PageSection>
 </template>
 
 <script>
-import { Plus } from 'lucide-vue-next'
 import { mapState } from 'vuex'
 import EmptyState from '../components/EmptyState.vue'
 import LinkCard from '../components/LinkCard.vue'
@@ -112,6 +130,7 @@ import LinksToolbar from '../components/LinksToolbar.vue'
 import LoadingState from '../components/LoadingState.vue'
 import Modal from '../components/Modal.vue'
 import PageSection from '../components/PageSection.vue'
+import SurfaceCard from '../components/SurfaceCard.vue'
 
 export default {
   name: 'LinkIndex',
@@ -124,15 +143,17 @@ export default {
     LoadingState,
     Modal,
     PageSection,
-    Plus
+    SurfaceCard
   },
 
   data () {
     return {
+      status: 'loading',
       searchInput: '',
       waiting: undefined,
       delete_temp: undefined,
-      loading: false,
+      deleting: false,
+      loadingMore: false,
       observer: null
     }
   },
@@ -141,46 +162,37 @@ export default {
     ...mapState(['links', 'link_search', 'next_page', 'page'])
   },
 
-  mounted () {
+  created () {
     this.searchInput = this.link_search || ''
-    this.setupInfiniteScroll()
+    this.load()
+  },
+
+  mounted () {
+    this.observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && this.status === 'ready') {
+        this.loadMore()
+      }
+    }, { rootMargin: '100px', threshold: 0.1 })
+
+    this.observer.observe(this.$refs.infiniteScrollTrigger)
   },
 
   beforeUnmount () {
-    if (this.observer) {
-      this.observer.disconnect()
-    }
-  },
-
-  beforeCreate () {
-    this.$store.commit('setPage', 1)
-    this.$store.dispatch('getLinks')
+    clearTimeout(this.waiting)
+    this.observer.disconnect()
   },
 
   methods: {
-    setupInfiniteScroll () {
-      if (!this.$refs.infiniteScrollTrigger) {
-        this.$nextTick(() => {
-          this.setupInfiniteScroll()
-        })
-        return
+    async load () {
+      this.status = 'loading'
+      this.$store.commit('setPage', 1)
+
+      try {
+        await this.$store.dispatch('getLinks')
+        this.status = 'ready'
+      } catch (e) {
+        this.status = 'error'
       }
-
-      this.observer = new IntersectionObserver(
-        (entries) => {
-          const target = entries[0]
-          if (target.isIntersecting && this.next_page && !this.loading) {
-            this.loadMore()
-          }
-        },
-        {
-          root: null,
-          rootMargin: '100px',
-          threshold: 0.1
-        }
-      )
-
-      this.observer.observe(this.$refs.infiniteScrollTrigger)
     },
 
     searchLink (value) {
@@ -189,50 +201,52 @@ export default {
 
       this.waiting = setTimeout(() => {
         this.$store.commit('setSearch', this.searchInput)
-        this.$store.commit('setPage', 1)
-        this.$store.commit('setLinks', [])
-        this.$store.dispatch('getLinks')
-
-        this.$nextTick(() => {
-          if (this.observer) {
-            this.observer.disconnect()
-          }
-          this.setupInfiniteScroll()
-        })
+        this.load()
       }, 500)
     },
 
-    deleteLink (id) {
-      const link = this.links.find((v) => v.code === id)
-      if (link) {
-        this.delete_temp = link
-        this.$refs.modal.openModal()
+    deleteLink (code) {
+      const link = this.links.find((v) => v.code === code)
+      if (!link) {
+        return
       }
+
+      this.delete_temp = link
+      this.$refs.modal.openModal()
     },
 
-    acceptDelete () {
-      if (this.delete_temp) {
-        this.$http.delete(`/link/${this.delete_temp.code}`).then(() => {
-          this.$store.dispatch('removeLink', this.delete_temp.code)
-          this.$refs.modal.cancel()
-        })
+    async acceptDelete () {
+      if (!this.delete_temp || this.deleting) {
+        return
+      }
+
+      this.deleting = true
+
+      try {
+        await this.$http.delete(`/link/${this.delete_temp.code}`)
+        this.$store.dispatch('removeLink', this.delete_temp.code)
+        this.$refs.modal.cancel()
+      } catch (e) {
+        // the axios interceptor already shows the error
+      } finally {
+        this.deleting = false
       }
     },
 
     async loadMore () {
-      if (this.loading || !this.next_page) {
+      if (this.loadingMore || !this.next_page) {
         return
       }
 
-      this.loading = true
+      this.loadingMore = true
 
       try {
         this.$store.commit('setPage', this.page + 1)
         await this.$store.dispatch('getLinks', true)
-      } catch (error) {
-        console.error('Error loading more links:', error)
+      } catch (e) {
+        this.$store.commit('setPage', this.page - 1)
       } finally {
-        this.loading = false
+        this.loadingMore = false
       }
     }
   }
