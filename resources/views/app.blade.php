@@ -7,6 +7,13 @@
     <title>Linker</title>
 
     <link rel="icon" href="{{ asset('logo.png') }}">
+    <link rel="manifest" href="{{ asset('build/manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#fafaff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1c1c1c" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Linker">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet"

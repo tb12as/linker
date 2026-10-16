@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen">
     <notifications position="bottom right" />
+    <PwaUpdate />
     <AppShell
       :is-dark="theme === 'dark'"
       @toggle-theme="toggleTheme"
@@ -12,12 +13,14 @@
 
 <script>
 import AppShell from './AppShell.vue'
+import PwaUpdate from './PwaUpdate.vue'
 
 const THEME_STORAGE_KEY = 'theme'
 
 export default {
   components: {
-    AppShell
+    AppShell,
+    PwaUpdate
   },
 
   data () {

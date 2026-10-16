@@ -29,6 +29,19 @@ Route::get('r/{code}', function ($uniqueCode) {
     abort(404);
 })->name('red');
 
+// served from the root so the service worker can control the whole site
+Route::get('sw.js', function () {
+    $path = public_path('build/sw.js');
+
+    abort_unless(file_exists($path), 404);
+
+    return response()->file($path, [
+        'Content-Type' => 'application/javascript',
+        'Cache-Control' => 'no-cache',
+        'Service-Worker-Allowed' => '/',
+    ]);
+})->withoutMiddleware(['web'])->name('sw');
+
 Route::view('{any}', 'app')->where('any', '.*');
 
 Route::get('/', function () {
