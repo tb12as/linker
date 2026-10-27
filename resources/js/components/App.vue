@@ -31,13 +31,23 @@ export default {
   },
 
   created () {
-    this.$store.dispatch('getUser')
+    this.$store.dispatch('getUser').then(() => {
+      const path = this.$route.path
+      const user = this.$store.state.user
+
+      if (user && path == '/') {
+        this.$router.push({ name: 'user.link' })
+      }
+    })
   },
 
   methods: {
     toggleTheme () {
       this.theme = this.theme === 'dark' ? 'light' : 'dark'
-      document.documentElement.classList.toggle('dark', this.theme === 'dark')
+      document.documentElement.classList.toggle(
+        'dark',
+        this.theme === 'dark'
+      )
 
       try {
         localStorage.setItem(THEME_STORAGE_KEY, this.theme)

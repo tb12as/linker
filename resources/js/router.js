@@ -11,7 +11,14 @@ import Public from './views/Public.vue'
 // We'll talk about nested routes later.
 const routes = [
   // { path: '/', component: Home },
-  { path: '/', component: Public, name: 'public' },
+  {
+    path: '/',
+    component: Public,
+    name: 'public',
+    meta: {
+      guestOnly: true
+    }
+  },
   { path: '/login', component: Login, name: 'login' },
   {
     path: '/links',
@@ -66,8 +73,11 @@ router.beforeEach((to, from, next) => {
     if (!store.state.user && !localStorage.getItem('api-token')) {
       router.push({ name: 'login', query: { to: to.path } })
     }
-  } else if (store.state.user) {
+  } else if (store.state.user && to.meta.guestOnly) {
     // redirect to home links page
+    if (to.path == '/') {
+      return next({ name: 'user.link' })
+    }
   }
 
   return next()

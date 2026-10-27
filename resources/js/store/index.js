@@ -5,6 +5,7 @@ const store = createStore({
   state () {
     return {
       user: null,
+      skip_next_user_fetch: false,
       link_search: null,
       page: 1,
       next_page: null,
@@ -32,10 +33,19 @@ const store = createStore({
       const old = state.links
       const newState = [...old, ...val]
       state.links = newState
+    },
+    setSkipNextUserFetch (state, val) {
+      state.skip_next_user_fetch = val
     }
   },
   actions: {
     async getUser ({ commit, state }) {
+      console.log('skip : ', state.skip_next_user_fetch)
+      if (state.skip_next_user_fetch) {
+        commit('setSkipNextUserFetch', false)
+        return
+      }
+
       if (!localStorage.getItem('api-token')) {
         commit('setUser', null)
         return

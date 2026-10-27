@@ -27,7 +27,7 @@
           class="btn-primary sm:w-32"
           :disabled="loading || !form.link"
         >
-          {{ loading ? 'Shortening...' : 'Shorten' }}
+          {{ loading ? "Shortening..." : "Shorten" }}
         </button>
       </div>
 
@@ -100,10 +100,15 @@ export default {
       this.short = ''
 
       const ip = await this.getIp()
-      const body = { link: this.form.link, title: `Anonymous Link - ${ip || 'Unknown IP'}` }
+      const body = {
+        link: this.form.link,
+        title: `Anonymous Link - ${ip || 'Unknown IP'}`
+      }
 
       try {
-        const res = await this.$http.post('/link/create', body, { headers: { Authorization: '' } })
+        const res = await this.$http.post('/link/create', body, {
+          headers: { Authorization: '' }
+        })
         this.short = (res.data.data && res.data.data.short_link) || ''
       } catch (e) {
         // the axios interceptor already shows the error
